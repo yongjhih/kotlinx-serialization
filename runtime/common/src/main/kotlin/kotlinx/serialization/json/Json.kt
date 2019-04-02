@@ -4,19 +4,10 @@
 package kotlinx.serialization.json
 
 import kotlinx.serialization.*
-import kotlinx.serialization.modules.*
 import kotlinx.serialization.json.internal.*
-import kotlin.jvm.JvmField
-import kotlin.reflect.KClass
-
-private val defaultJsonModule = serializersModuleOf(mapOf<KClass<*>, KSerializer<*>>(
-    JsonElement::class to JsonElementSerializer,
-    JsonPrimitive::class to JsonPrimitiveSerializer,
-    JsonLiteral::class to JsonLiteralSerializer,
-    JsonNull::class to JsonNullSerializer,
-    JsonObject::class to JsonObjectSerializer,
-    JsonArray::class to JsonArraySerializer
-))
+import kotlinx.serialization.modules.*
+import kotlin.jvm.*
+import kotlin.reflect.*
 
 /**
  * The main entry point to work with JSON serialization.
@@ -28,13 +19,7 @@ private val defaultJsonModule = serializersModuleOf(mapOf<KClass<*>, KSerializer
  * Any serializable class can be serialized to or from [JsonElement] with [Json.fromJson] and [Json.toJson] respectively or
  * serialize properties of [JsonElement] type.
  *
- * Json configuration parameters:
- * [unquoted] specifies whether keys and values should be quoted, used mostly for testing.
- * [indented] specifies whether resulting JSON should be pretty-printed.
- * [indent] specifies which indent string to use with [indented] mode.
- * [strictMode] enables strict mode, which prohibits unknown keys and infinite values in floating point numbers.
- * [useArrayPolymorphism] switches polymorphic serialization to the default array format.
- * [classDiscriminator] name of the class descriptor property in polymorphic serialization.
+ * Json-specific behaviour can be configured with [JsonConfiguration].
  *
  * Example of usage:
  * ```
@@ -63,16 +48,34 @@ private val defaultJsonModule = serializersModuleOf(mapOf<KClass<*>, KSerializer
  * Note that `@ImplicitReflectionSerializer` are used in order to omit `DataHolder.serializer`, but this is a temporary limitation.
  */
 public class Json(
-    @JvmField internal val unquoted: Boolean = false,
-    @JvmField internal val indented: Boolean = false,
-    @JvmField internal val indent: String = "    ",
-    @JvmField internal val strictMode: Boolean = true,
-    val updateMode: UpdateMode = UpdateMode.OVERWRITE,
-    val encodeDefaults: Boolean = true,
-    @JvmField internal val useArrayPolymorphism: Boolean = false,
-    @JvmField internal val classDiscriminator: String = "type",
+    @JvmField internal val configuration: JsonConfiguration = JsonConfiguration(),
     context: SerialModule = EmptyModule
 ): AbstractSerialFormat(context + defaultJsonModule), StringFormat {
+
+    /**
+     * DSL-like constructor for Json
+     */
+    public constructor(block: JsonBuilder.() -> Unit) : this(JsonBuilder().apply { block() })
+
+    private constructor(builder: JsonBuilder) : this(builder.buildConfiguration(), builder.buildModule())
+
+    @Deprecated(
+        message = "Use constructor with JsonConfiguration instead",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("Json(JsonConfiguration(encodeDefaults, strictMode, unquoted, indented, indent, useArrayPolymorphism), context)")
+    )
+    public constructor(
+        unquoted: Boolean = false,
+        indented: Boolean = false,
+        indent: String = "    ",
+        strictMode: Boolean = true,
+        updateMode: UpdateMode = UpdateMode.OVERWRITE,
+        encodeDefaults: Boolean = true,
+        useArrayPolymorphism: Boolean = true,
+        context: SerialModule = EmptyModule
+    ) : this(JsonConfiguration(encodeDefaults, strictMode, unquoted, indented, indent, useArrayPolymorphism), context)
+
+
     /**
      * Serializes [obj] into an equivalent JSON using provided [serializer].
      * @throws [JsonException] subclass in case of serialization error.
@@ -142,9 +145,9 @@ public class Json(
 
     companion object : StringFormat {
         val plain = Json()
-        val unquoted = Json(unquoted = true)
-        val indented = Json(indented = true)
-        val nonstrict = Json(strictMode = false)
+        val unquoted = Json(JsonConfiguration(unquoted = true, useArrayPolymorphism = true))
+        val indented = Json(JsonConfiguration(prettyPrint = true, useArrayPolymorphism = true))
+        val nonstrict = Json(JsonConfiguration(strictMode = false, useArrayPolymorphism = true))
 
         override fun install(module: SerialModule) = throw IllegalStateException("You should not install anything to global instance")
         override val context: SerialModule get() = plain.context
@@ -155,3 +158,34 @@ public class Json(
             plain.parse(deserializer, string)
     }
 }
+
+/**
+ * Builder to conveniently build Json instances.
+ * Properties of this builder are directly matched with properties of [JsonConfiguration].
+ */
+public class JsonBuilder {
+    public var encodeDefaults: Boolean = true
+    public var strictMode: Boolean = true
+    public var unquoted: Boolean = false
+    public var prettyPrint: Boolean = false
+    public var indent: String = "    "
+    public var useArrayPolymorphism: Boolean = false
+    public var classDiscriminator: String = "type"
+    public var serialModule: SerialModule = EmptyModule
+
+    public fun buildConfiguration(): JsonConfiguration =
+        JsonConfiguration(encodeDefaults, strictMode, unquoted, prettyPrint, indent, useArrayPolymorphism, classDiscriminator)
+
+    public fun buildModule(): SerialModule = serialModule
+}
+
+private val defaultJsonModule = serializersModuleOf(
+    mapOf<KClass<*>, KSerializer<*>>(
+        JsonElement::class to JsonElementSerializer,
+        JsonPrimitive::class to JsonPrimitiveSerializer,
+        JsonLiteral::class to JsonLiteralSerializer,
+        JsonNull::class to JsonNullSerializer,
+        JsonObject::class to JsonObjectSerializer,
+        JsonArray::class to JsonArraySerializer
+    )
+)

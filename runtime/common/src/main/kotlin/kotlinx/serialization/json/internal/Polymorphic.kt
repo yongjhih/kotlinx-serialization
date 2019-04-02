@@ -9,7 +9,7 @@ import kotlinx.serialization.internal.*
 import kotlinx.serialization.json.*
 
 internal inline fun <T> JsonOutput.encodePolymorphically(serializer: SerializationStrategy<T>, value: T, ifPolymorphic: () -> Unit) {
-    if (serializer !is PolymorphicSerializer<*> || json.useArrayPolymorphism) {
+    if (serializer !is PolymorphicSerializer<*> || json.configuration.useArrayPolymorphism) {
         serializer.serialize(this, value)
         return
     }
@@ -24,13 +24,13 @@ internal inline fun <T> JsonOutput.encodePolymorphically(serializer: Serializati
 }
 
 internal fun <T> JsonInput.decodeSerializableValuePolymorphic(deserializer: DeserializationStrategy<T>): T {
-    if (deserializer !is PolymorphicSerializer<*> || json.useArrayPolymorphism) {
+    if (deserializer !is PolymorphicSerializer<*> || json.configuration.useArrayPolymorphism) {
         return deserializer.deserialize(this)
     }
 
     val jsonTree = cast<JsonObject>(decodeJson())
-    val type = jsonTree.getValue(json.classDiscriminator).content
-    (jsonTree.content as MutableMap).remove(json.classDiscriminator)
+    val type = jsonTree.getValue(json.configuration.classDiscriminator).content
+    (jsonTree.content as MutableMap).remove(json.configuration.classDiscriminator)
     @Suppress("UNCHECKED_CAST")
     val actualSerializer = deserializer.findPolymorphicSerializer(this, type) as KSerializer<T>
     return json.readJson(jsonTree, actualSerializer)

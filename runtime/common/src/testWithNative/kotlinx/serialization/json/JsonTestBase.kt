@@ -1,6 +1,7 @@
 /*
  * Copyright 2017-2019 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
  */
+@file:UseExperimental(kotlinx.serialization.ImplicitReflectionSerializer::class)
 
 package kotlinx.serialization.json
 
@@ -11,8 +12,8 @@ import kotlin.test.assertEquals
 
 abstract class JsonTestBase {
     protected val strict = Json()
-    protected val unquoted = Json(unquoted = true)
-    protected val nonStrict = Json(strictMode = false)
+    protected val unquoted = Json { unquoted = true }
+    protected val nonStrict = Json { strictMode = false }
 
     @ImplicitReflectionSerializer
     internal inline fun <reified T : Any> Json.stringify(value: T, useStreaming: Boolean): String {

@@ -11,7 +11,7 @@ import kotlin.test.*
 class JsonMapPolymorphismTest : JsonTestBase() {
 
     @Serializable
-    private data class MapWrapper(val map: Map<String, @Polymorphic InnerBase>)
+    internal data class MapWrapper(val map: Map<String, @Polymorphic InnerBase>)
 
     @Test
     fun testPolymorphicValues() = parametrizedTest(
@@ -22,7 +22,7 @@ class JsonMapPolymorphismTest : JsonTestBase() {
         polymorphicJson)
 
     @Serializable
-    private data class MapNullableWrapper(val map: Map<String, @Polymorphic InnerBase?>)
+    internal data class MapNullableWrapper(val map: Map<String, @Polymorphic InnerBase?>)
 
     @Test
     fun testPolymorphicNullableValues() = parametrizedTest(

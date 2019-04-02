@@ -17,9 +17,9 @@
 package kotlinx.serialization.features
 
 import kotlinx.serialization.*
-import kotlinx.serialization.modules.*
 import kotlinx.serialization.internal.*
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.*
 import kotlin.test.*
 
 class ContextAndPolymorphicTest {
@@ -62,7 +62,10 @@ class ContextAndPolymorphicTest {
     fun initContext() {
         val scope = serializersModuleOf(Payload::class, PayloadSerializer)
         val bPolymorphicModule = SerializersModule { polymorphic(Any::class) { Payload::class with PayloadSerializer } }
-        json = Json(unquoted = true, useArrayPolymorphism = true, context = scope + bPolymorphicModule)
+        json = Json(
+            JsonConfiguration(unquoted = true, useArrayPolymorphism = true),
+            context = scope + bPolymorphicModule
+        )
     }
 
     @Test
@@ -97,8 +100,8 @@ class ContextAndPolymorphicTest {
         // MapModule and CompositeModule are also available
         val binaryModule = serializersModule(BinaryPayloadSerializer)
 
-        val json1 = Json(useArrayPolymorphism = true, context = simpleModule)
-        val json2 = Json(useArrayPolymorphism = true, context = binaryModule)
+        val json1 = Json { useArrayPolymorphism = true; serialModule = simpleModule }
+        val json2 = Json { useArrayPolymorphism = true; serialModule = binaryModule }
 
         // in json1, Payload would be serialized with PayloadSerializer,
         // in json2, Payload would be serialized with BinaryPayloadSerializer

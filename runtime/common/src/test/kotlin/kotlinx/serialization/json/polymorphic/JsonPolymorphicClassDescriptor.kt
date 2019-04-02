@@ -9,11 +9,16 @@ import kotlin.test.*
 
 class JsonPolymorphicClassDescriptor : JsonTestBase() {
 
-    private val json = Json(unquoted = true, classDiscriminator = "class", context = polymorphicTestModule)
+    private val json = Json {
+        unquoted = true
+        classDiscriminator = "class"
+        serialModule = polymorphicTestModule
+    }
 
     @Test
     fun testPolymorphicProperties() = parametrizedTest(
         InnerBox(InnerImpl(42, "foo")),
         "{base:{class:kotlinx.serialization.json.polymorphic.InnerImpl,field:42,str:foo,nullable:null}}",
-        json)
+        json
+    )
 }
