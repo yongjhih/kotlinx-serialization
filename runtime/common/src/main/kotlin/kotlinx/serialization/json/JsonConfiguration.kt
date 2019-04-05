@@ -4,6 +4,7 @@
 
 package kotlinx.serialization.json
 
+import kotlinx.serialization.*
 import kotlin.jvm.*
 
 /**
@@ -23,21 +24,30 @@ public class JsonConfiguration(
     @JvmField internal val strictMode: Boolean = true,
     @JvmField internal val unquoted: Boolean = false,
     @JvmField internal val prettyPrint: Boolean = false,
-    @JvmField internal val indent: String = "    ",
+    @JvmField internal val indent: String = defaultIndent,
     @JvmField internal val useArrayPolymorphism: Boolean = false,
-    @JvmField internal val classDiscriminator: String = "type") {
+    @JvmField internal val classDiscriminator: String = defaultDiscriminator,
+    @Deprecated(message = "Custom update modes are not fully supported", level = DeprecationLevel.WARNING)
+    @JvmField internal val updateMode: UpdateMode = UpdateMode.OVERWRITE) {
 
     init {
-        if (useArrayPolymorphism) require(classDiscriminator == "type") {
+        if (useArrayPolymorphism) require(classDiscriminator == defaultDiscriminator) {
             "Class discriminator should not be specified when array polymorphism is specified"
         }
 
-        if (!prettyPrint) require(indent == "    ") {
+        if (!prettyPrint) require(indent == defaultIndent) {
             "Indent should not be specified when default printing mode is used"
         }
     }
 
     companion object {
-        val default = JsonConfiguration()
+        @JvmStatic
+        private val defaultIndent = "    "
+        @JvmStatic
+        private val defaultDiscriminator = "type"
+
+        @JvmStatic
+        @UnstableDefault
+        public val Default = JsonConfiguration()
     }
 }

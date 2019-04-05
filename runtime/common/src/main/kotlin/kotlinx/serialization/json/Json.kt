@@ -57,6 +57,14 @@ public class Json(
      */
     public constructor(block: JsonBuilder.() -> Unit) : this(JsonBuilder().apply { block() })
 
+    @Deprecated(
+        message = "Default constructor is deprecated, please specify desired configuration explicitly or use Json(JsonConfiguration.Default)",
+        replaceWith = ReplaceWith("Json(JsonConfiguration.Default)"),
+        level = DeprecationLevel.WARNING
+    )
+    @Suppress("DEPRECATION_ERROR")
+    public constructor() : this(unquoted = false)
+
     private constructor(builder: JsonBuilder) : this(builder.buildConfiguration(), builder.buildModule())
 
     @Deprecated(
@@ -71,9 +79,18 @@ public class Json(
         strictMode: Boolean = true,
         updateMode: UpdateMode = UpdateMode.OVERWRITE,
         encodeDefaults: Boolean = true,
-        useArrayPolymorphism: Boolean = true,
         context: SerialModule = EmptyModule
-    ) : this(JsonConfiguration(encodeDefaults, strictMode, unquoted, indented, indent, useArrayPolymorphism), context)
+    ) : this(
+        JsonConfiguration(
+            encodeDefaults,
+            strictMode,
+            unquoted,
+            indented,
+            indent,
+            useArrayPolymorphism = true,
+            updateMode = updateMode
+        ), context
+    )
 
 
     /**

@@ -30,6 +30,7 @@ class JsonNestedPolymorphismTest : JsonTestBase() {
 
     @Test
     fun testAnyList() = parametrizedTest(
+        NestedGenericsList.serializer(),
         NestedGenericsList(listOf(listOf(InnerImpl(1)), listOf(InnerImpl(2)))),
         "{list:[[" +
                 "{type:kotlinx.serialization.json.polymorphic.InnerImpl,field:1,str:default,nullable:null}],[" +
@@ -41,6 +42,7 @@ class JsonNestedPolymorphismTest : JsonTestBase() {
 
     @Test
     fun testAnyMap() = parametrizedTest(
+        NestedGenericsMap.serializer(),
         NestedGenericsMap(mapOf("k1" to mapOf("k1" to InnerImpl(1)))),
         "{list:{k1:{k1:{type:kotlinx.serialization.json.polymorphic.InnerImpl,field:1,str:default,nullable:null}}}}",
         polymorphicJson)
@@ -50,6 +52,7 @@ class JsonNestedPolymorphismTest : JsonTestBase() {
 
     @Test
     fun testAny() = parametrizedTest(
+        AnyWrapper.serializer(),
         AnyWrapper(OuterImpl(InnerImpl2(1), InnerImpl(2))),
         "{any:" +
                 "{type:kotlinx.serialization.json.polymorphic.OuterImpl,base:{type:kotlinx.serialization.json.polymorphic.InnerImpl2,field:1}," +

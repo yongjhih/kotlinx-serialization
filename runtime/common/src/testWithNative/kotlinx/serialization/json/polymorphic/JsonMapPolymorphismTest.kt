@@ -15,6 +15,7 @@ class JsonMapPolymorphismTest : JsonTestBase() {
 
     @Test
     fun testPolymorphicValues() = parametrizedTest(
+        MapWrapper.serializer(),
         MapWrapper(mapOf("k1" to InnerImpl(1), "k2" to InnerImpl2(2))),
         "{map:" +
                 "{k1:{type:kotlinx.serialization.json.polymorphic.InnerImpl,field:1,str:default,nullable:null}," +
@@ -26,6 +27,7 @@ class JsonMapPolymorphismTest : JsonTestBase() {
 
     @Test
     fun testPolymorphicNullableValues() = parametrizedTest(
+        MapNullableWrapper.serializer(),
         MapNullableWrapper(mapOf("k1" to InnerImpl(1), "k2" to null)),
         "{map:" +
                 "{k1:{type:kotlinx.serialization.json.polymorphic.InnerImpl,field:1,str:default,nullable:null}," +

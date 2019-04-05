@@ -21,8 +21,9 @@ internal class StreamingJsonInput internal constructor(
     
     public override fun decodeJson(): JsonElement = JsonParser(reader).read()
 
+    @Suppress("DEPRECATION")
     override val updateMode: UpdateMode
-        get() = UpdateMode.OVERWRITE
+        get() = configuration.updateMode
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
         return decodeSerializableValuePolymorphic(deserializer)

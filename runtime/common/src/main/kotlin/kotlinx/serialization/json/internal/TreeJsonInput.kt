@@ -40,8 +40,9 @@ private sealed class AbstractJsonTreeInput(override val json: Json, open val obj
 
     override fun decodeJson(): JsonElement = currentObject()
 
+    @Suppress("DEPRECATION")
     override val updateMode: UpdateMode
-        get() = UpdateMode.OVERWRITE
+        get() = configuration.updateMode
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
         return decodeSerializableValuePolymorphic(deserializer)

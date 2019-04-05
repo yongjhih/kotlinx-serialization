@@ -17,6 +17,7 @@ class JsonPolymorphicClassDescriptor : JsonTestBase() {
 
     @Test
     fun testPolymorphicProperties() = parametrizedTest(
+        InnerBox.serializer(),
         InnerBox(InnerImpl(42, "foo")),
         "{base:{class:kotlinx.serialization.json.polymorphic.InnerImpl,field:42,str:foo,nullable:null}}",
         json

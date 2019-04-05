@@ -5,7 +5,6 @@
 package kotlinx.serialization.json.internal
 
 import kotlinx.serialization.*
-import kotlinx.serialization.internal.*
 import kotlinx.serialization.json.*
 
 internal inline fun <T> JsonOutput.encodePolymorphically(serializer: SerializationStrategy<T>, value: T, ifPolymorphic: () -> Unit) {
@@ -16,11 +15,17 @@ internal inline fun <T> JsonOutput.encodePolymorphically(serializer: Serializati
 
     @Suppress("UNCHECKED_CAST")
     val actualSerializer = serializer.findPolymorphicSerializer(this, value as Any) as KSerializer<Any>
-    if (actualSerializer is EnumSerializer<*>) {
-        throw IllegalStateException("Enums cannot be serialized polymorphically")
-    }
+    val kind = actualSerializer.descriptor.kind
+    checkKind(kind)
+
     ifPolymorphic()
     actualSerializer.serialize(this, value)
+}
+
+fun checkKind(kind: SerialKind) {
+    if (kind is UnionKind.ENUM_KIND) error("Enums cannot be serialized polymorphically with 'type' parameter. You can use 'JsonConfiguration.useArrayPolymorphism' instead")
+    if (kind is PrimitiveKind) error("Primitives cannot be serialized polymorphically with 'type' parameter. You can use 'JsonConfiguration.useArrayPolymorphism' instead")
+    if (kind is UnionKind.POLYMORPHIC) error("Unexpected kind 'POLYMORPHIC'")
 }
 
 internal fun <T> JsonInput.decodeSerializableValuePolymorphic(deserializer: DeserializationStrategy<T>): T {
