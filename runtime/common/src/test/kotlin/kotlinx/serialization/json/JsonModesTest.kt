@@ -17,9 +17,13 @@
 package kotlinx.serialization.json
 
 import kotlinx.serialization.*
+import kotlinx.serialization.internal.*
 import kotlin.test.*
 
 class JsonModesTest : JsonTestBase() {
+
+    @Serializable
+    private data class Simple(val a: Int = 42, val b: Int? = null)
 
     @Test
     fun testNan() = parametrizedTest { useStreaming ->
@@ -56,6 +60,16 @@ class JsonModesTest : JsonTestBase() {
         assertEquals(
             nonStrict.parse("{strangeField: {a: b, c: {d: e}, f: [g,h,j] }, a: 0}", useStreaming),
             data)
+    }
+
+    @Test
+    fun nonStrictJsonCanSkipNullablePrimitivesValues() {
+        val result = nonStrict.parse(makeNullable(Simple.serializer()), "{a: 1, b: 42.0}")
+        assertEquals(result?.a, 1)
+        assertEquals(result?.b, null)
+        assertFailsWith(NumberFormatException::class) {
+            strict.parse(makeNullable(Simple.serializer()), "{a: 1, b: 42.0}")
+        }
     }
 
     @Test

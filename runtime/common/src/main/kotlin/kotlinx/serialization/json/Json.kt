@@ -56,7 +56,8 @@ public class Json(
     @JvmField internal val indent: String = "    ",
     @JvmField internal val strictMode: Boolean = true,
     val updateMode: UpdateMode = UpdateMode.OVERWRITE,
-    val encodeDefaults: Boolean = true
+    val encodeDefaults: Boolean = true,
+    val errorHandler: (Throwable) -> Unit = {}
 ): AbstractSerialFormat(), StringFormat {
 
     init {

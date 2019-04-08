@@ -140,11 +140,7 @@ abstract class ElementValueDecoder : Decoder, CompositeDecoder {
     final override fun <T: Any?> decodeSerializableElement(desc: SerialDescriptor, index: Int, deserializer: DeserializationStrategy<T>): T =
         decodeSerializableValue(deserializer)
     final override fun <T: Any> decodeNullableSerializableElement(desc: SerialDescriptor, index: Int, deserializer: DeserializationStrategy<T?>): T? =
-            try {
-                decodeNullableSerializableValue(deserializer)
-            } catch (e: Throwable) {
-                null
-            }
+        decodeNullableSerializableValue(deserializer)
     final override fun <T> updateSerializableElement(desc: SerialDescriptor, index: Int, deserializer: DeserializationStrategy<T>, old: T): T =
         updateSerializableValue(deserializer, old)
     final override fun <T: Any> updateNullableSerializableElement(desc: SerialDescriptor, index: Int, deserializer: DeserializationStrategy<T?>, old: T?): T? =
